@@ -1,5 +1,6 @@
 *{
     box-sizing: border-box;
+    font-family: 'Black Han Sans', sans-serif;
 }
 
 #grid{
@@ -11,8 +12,18 @@
     display:flex;
     flex-direction: column;
     justify-content: space-between;
+    font-size:25px;
 }
 
+#sidebar h1{
+    font-size:50px;
+    margin:0px;
+    font-weight: lighter;
+}
+
+#sidebar p{
+    margin: 10px 0 10px 0;
+}
 #board{
     border: solid 2px;
 }
