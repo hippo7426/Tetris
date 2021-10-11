@@ -1,3 +1,5 @@
+// 게임 보드 내의 상황을 다루는 스크립트
+
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
 
