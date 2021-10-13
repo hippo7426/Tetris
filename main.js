@@ -41,8 +41,11 @@ let board = new Board(ctx, ctxNext);
 
 function play() {
     resetGame();
-    console.table(board.cells);
+    animate();
+}
 
+function auto(){
+    resetGame();
     animate();
 }
 
@@ -85,6 +88,8 @@ function animate(now = 0){
     }
     
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    //board.genShadow();
+    board.updateShadow();
     board.draw();
     rafid = requestAnimationFrame(animate);
 

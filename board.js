@@ -15,38 +15,39 @@ class Board {
         this.ctx.scale(BLOCK_SIZE, BLOCK_SIZE);
     }
 
-    drop(){
+    drop() {
         let b = moves[KEY.DOWN](this.block);
-        if (this.valid(b)){
+        if (this.valid(b)) {
             this.block.move(b);
         }
-        else{
+        else {
             this.update();
             this.clear();
-            if(this.block.y === 0){
+            if (this.block.y === 0) {
                 return false;
             }
             this.block = this.next;
             this.block.ctx = this.ctx;
             this.block.x = 3;
             this.getNextBlock();
+            this.genShadow();
         }
 
         return true;
     }
 
-    clear(){
+    clear() {
         let line = 0;
         this.cells.forEach((row, y) => {
-            if (row.every(value => value > 0)){
+            if (row.every(value => value > 0)) {
                 this.cells.splice(y, 1);
                 this.cells.unshift(Array(COLS).fill(0));
                 line++;
             }
         });
-        if (line > 0){
+        if (line > 0) {
             info.score += this.pointsByLine(line);
-            info.lines+=line;
+            info.lines += line;
 
             if (info.lines >= LINES_PER_LEVEL) {
                 info.level++;
@@ -56,35 +57,64 @@ class Board {
         }
     }
 
-    pointsByLine(line){
+    pointsByLine(line) {
         return line === 1 ? POINT.SINGLE :
-        line === 2 ? POINT.DOUBLE :
-        line === 3 ? POINT.TRIPLE :
-        line === 4? POINT.TETRIS :
-        0;
+            line === 2 ? POINT.DOUBLE :
+                line === 3 ? POINT.TRIPLE :
+                    line === 4 ? POINT.TETRIS :
+                        0;
     }
 
-    draw(){
+    genShadow() {
+        this.shadow = new Block(this.ctx);
+        this.shadow.x = this.block.x;
+        this.shadow.shape = this.block.shape;
+        this.shadow.color = 'gray';
+        let s = moves[KEY.DOWN](this.shadow);
+        while (this.valid(s)) {
+            this.shadow.move(s);
+            s = moves[KEY.DOWN](this.shadow);
+        }
+    }
+
+    updateShadow() {
+        this.shadow.x = this.block.x;
+        this.shadow.shape = this.block.shape;
+        let s = moves[KEY.DOWN](this.block);
+        while (this.valid(s)) {
+            this.shadow.move(s);
+            s = moves[KEY.DOWN](this.shadow);
+        }
+    }
+
+    draw() {
         this.drawBoard();
+        this.shadow.draw();
         this.block.draw();
     }
-    update(){
-        this.block.shape.forEach((row, y)=>{
+    update() {
+        let below = 0;
+        this.block.shape.forEach((row, y) => {
             row.forEach((value, x) => {
-                if (value>0){
-                    this.cells[y+this.block.y][x+this.block.x] = value;
+                if (value>0&&((y + this.block.y + 1 < ROWS && this.cells[y + this.block.y + 1][x + this.block.x]  >0) || y+this.block.y+1===ROWS)){
+                    below++;
+                }
+                if (value > 0) {
+                    this.cells[y + this.block.y][x + this.block.x] = value;
                 }
             });
         });
-        console.table(this.cells);
+
+        info.score += below * 10;
+        
     }
 
-    drawBoard(){
-        this.cells.forEach((row,y)=>{
-            row.forEach((value, x)=>{
-                if (value>0){
-                    this.ctx.fillStyle = COLOR[value-1];
-                    this.ctx.fillRect(x,y,1,1);
+    drawBoard() {
+        this.cells.forEach((row, y) => {
+            row.forEach((value, x) => {
+                if (value > 0) {
+                    this.ctx.fillStyle = COLOR[value - 1];
+                    this.ctx.fillRect(x, y, 1, 1);
                 }
             });
         });
@@ -94,13 +124,14 @@ class Board {
         this.block = new Block(this.ctx);
         this.block.x = 3;
         this.getNextBlock();
+        this.genShadow();
 
     }
 
-    getNextBlock(){
-        const {width, height} = this.ctxNext.canvas;
+    getNextBlock() {
+        const { width, height } = this.ctxNext.canvas;
         this.next = new Block(this.ctxNext);
-        this.ctxNext.clearRect(0,0,width, height);
+        this.ctxNext.clearRect(0, 0, width, height);
         this.next.draw();
     }
     getNewBoard() {
