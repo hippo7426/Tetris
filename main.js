@@ -7,12 +7,33 @@ const ctxNext = canvasNext.getContext('2d');
 let time = null;
 let rafid = null;
 
+// 화면에 표시되는 플레이어 정보
 let userInfo = {
     score:0,
     lines:0,
     level:0
 };
 
+// userInfo의 property가 변경될 때 작동하는 Proxy
+let info = new Proxy(userInfo, {
+    set : (target, key, value)=> {
+        target[key] = value;
+        updateInfo(key, value);
+        return true;
+    }
+});
+
+// new Board
+let board = new Board(ctx, ctxNext);
+
+// next block을 보여주는 canvas 초기화
+function initNextBlock(){
+    ctxNext.canvas.width = 4*BLOCK_SIZE;
+    ctxNext.canvas.height = 4*BLOCK_SIZE;
+    ctxNext.scale(BLOCK_SIZE, BLOCK_SIZE);
+}
+
+// info Proxy에서 호출되는 정보 갱신 함수
 function updateInfo(key, value){
     let elem = document.getElementById(key);
     if (elem){
@@ -22,28 +43,18 @@ function updateInfo(key, value){
 
 initNextBlock();
 
-function initNextBlock(){
-    ctxNext.canvas.width = 4*BLOCK_SIZE;
-    ctxNext.canvas.height = 4*BLOCK_SIZE;
-    ctxNext.scale(BLOCK_SIZE, BLOCK_SIZE);
-
-}
-let info = new Proxy(userInfo, {
-    set : (target, key, value)=> {
-        target[key] = value;
-        updateInfo(key, value);
-        return true;
-    }
-});
-
-// Board 클래스로부터 인스턴스 생성
-let board = new Board(ctx, ctxNext);
-
+// 게임 시작
 function play() {
+    addEventListener();
     resetGame();
+
+    if(rafid){
+        cancelAnimationFrame(rafid);
+    }
     animate();
 }
 
+// DFS를 통한 Auto Play
 function auto(){
     resetGame();
     animate();
@@ -58,6 +69,7 @@ function resetGame() {
 }
 
 // 매번 event.code에 따라 case를 분리하기 번거로움 ex) "ArrowUp"
+// 펼침 연산자를 활용한 얕은 복사
 const moves = {
     [KEY.LEFT]: b => ({ ...b, x: b.x - 1 }),
     [KEY.RIGHT]: b => ({ ...b, x: b.x + 1 }),
@@ -67,6 +79,7 @@ const moves = {
     
 }
 
+// 게임 종료
 function gameOver(){
     cancelAnimationFrame(rafid);
     ctx.fillStyle='black';
@@ -75,6 +88,8 @@ function gameOver(){
     ctx.fillStyle='red';
     ctx.fillText('Game Over', 2.4, 4);
 }
+
+// requestAnimationFrame() 을 활용해 Drop 구현
 // parameter 'now' indicates the current time (based on the number of milliseconds since time origin)
 function animate(now = 0){
     time.elapsed = now-time.start;
@@ -95,8 +110,14 @@ function animate(now = 0){
 
 }
 
+function addEventListener(){
+    document.removeEventListener('keydown', KeyDown);
+    document.addEventListener('keydown', KeyDown);
+}
 
-document.addEventListener('keydown', event => {
+
+// 키보드 입력에 대한 EventListener
+function KeyDown(){
     if (moves[event.code]) {
         // 이벤트 버블링 방지
         event.preventDefault();
@@ -114,8 +135,8 @@ document.addEventListener('keydown', event => {
             if (event.code === KEY.DOWN){
                 info.score+=POINT.SOFT_DROP;
             }
-            //board.draw() <= requestAnimationFrame() 에서 약 1/60 초 마다 갱신됨
+            //board.draw() <= requestAnimationFrame() 에서 약 1/60 초 마다 호출됨
         }
     }
-})
+}
 

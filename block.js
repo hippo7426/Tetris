@@ -12,6 +12,7 @@ class Block {
         this.spawn();
     };
 
+    // 새로운 블럭 생성
     spawn() {
         this.x = 0;
         this.y = 0;
@@ -20,9 +21,12 @@ class Block {
         this.shape = SHAPES[this.id];
     }
 
+    // 블럭 랜덤 생성 함수
     randomBlock(num){
         return Math.floor(Math.random()*num);
     }
+
+    // 블럭(this) 그리기
     draw() {
         this.ctx.fillStyle = this.color;
         this.shape.forEach((row, y) => {
@@ -34,6 +38,7 @@ class Block {
         })
     }
 
+    // 블럭 이동, 회전
     move(b) {
        this.x = b.x;
        this.y = b.y;
