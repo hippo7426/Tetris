@@ -4,6 +4,7 @@ const COLS = 10;
 const ROWS = 20;
 const BLOCK_SIZE = 30;
 const LINES_PER_LEVEL = 10;
+const VISIBLE_BLOCKS = 3;
 
 const COLOR = [
     'cyan',

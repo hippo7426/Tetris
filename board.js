@@ -1,7 +1,22 @@
 // 게임 보드 내의 상황을 다루는 script
 
+// Auto Play를 위한 tree의 Node 클래스
+class treeNode{
+    constructor(lv){
+        this.lv = lv;
+        this.acmScore = 0;
+        this.child=[];
+    }
+}
+
+// Board Class
 class Board {
     cells;
+    nextBlocks=[];
+    // Auto Play variables
+    recX;
+    recY;
+    recShape;
     
     constructor(ctx, ctxNext) {
         this.ctx = ctx;
@@ -21,8 +36,12 @@ class Board {
         this.cells = this.getNewBoard();
         this.block = new Block(this.ctx);
         this.block.x = 3;
+        this.initNextBlocks();
         this.getNextBlock();
-        this.genShadow();
+      //  const { width, height } = this.ctxNext.canvas;
+        //this.ctxNext.clearRect(0,0,width,height);
+        //this.nextBlocks[0].draw();
+        //this.genShadow();
         
     }
     
@@ -33,12 +52,17 @@ class Board {
         );
     }
 
-    // 다음 블럭 생성 <= 수정 필요, Visible Blocks의 크기에 따라 Next Block 생성, 배열로 저장, Auto play에 활용
+    // 다음 블럭 생성 
     getNextBlock() {
         const { width, height } = this.ctxNext.canvas;
         this.next = new Block(this.ctxNext);
         this.ctxNext.clearRect(0, 0, width, height);
         this.next.draw();
+    }
+
+    // VISIBLE_BLOCKS의 값에 따라 Next Block 배열 초기화
+    initNextBlocks(){
+
     }
     
     // 아래로 떨어질 수 있으면 이를 실행, 불가능 할땐 보드 갱신 or game over 신호 return
@@ -194,6 +218,10 @@ class Board {
         while (this.valid(s)) {
             this.shadow.move(s);
             s = moves[KEY.DOWN](this.shadow);
+            
         }
     }
+
+    // additional function : Auto Play
+
 }
