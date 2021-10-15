@@ -32,7 +32,7 @@ class Board {
     }
 
     // 게임 재시작 시 초기화
-    reset(auto) {
+    reset() {
         this.cells = this.getNewBoard();
         this.block = new Block(this.ctx);
         this.block.x = 3;
@@ -58,10 +58,10 @@ class Board {
     getNextBlock() {
         const { width, height } = this.ctxNext.canvas;
       
-        this.next = this.nextBlocks[0];
         this.nextBlocks.splice(0, 1);
         let newBlock = new Block(this.ctxNext);
         this.nextBlocks.push(newBlock);
+        this.next = this.nextBlocks[0];
         
         this.ctxNext.clearRect(0, 0, width, height);
         this.next.draw();
