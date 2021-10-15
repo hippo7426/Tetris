@@ -36,23 +36,16 @@ class Board {
         this.cells = this.getNewBoard();
         this.block = new Block(this.ctx);
         this.block.x = 3;
+        
         this.initNextBlocks();
         const { width, height } = this.ctxNext.canvas;
         this.ctxNext.clearRect(0, 0, width, height);
-        this.nextBlocks[0].draw();
-        this.next=this.nextBlocks[0];
-        if (!auto)
-            this.genShadow();
+        this.next = this.nextBlocks[0];
+        this.next.draw();
+        
+        this.genShadow();
 
     }
-
-    // resetForAuto() {
-    //     this.cells = this.getNewBoard();
-    //     this.block = new Block(this.ctx);
-    //     this.block.x = 3;
-    //     this.initNextBlocks();
-
-    // }
 
     // ROWS*COLS 크기의 이차원 배열 return, 모두 0으로 초기화됨
     getNewBoard() {
@@ -64,18 +57,21 @@ class Board {
     // 다음 블럭 생성 
     getNextBlock() {
         const { width, height } = this.ctxNext.canvas;
+      
         this.next = this.nextBlocks[0];
         this.nextBlocks.splice(0, 1);
         let newBlock = new Block(this.ctxNext);
         this.nextBlocks.push(newBlock);
+        
+        this.ctxNext.clearRect(0, 0, width, height);
         this.next.draw();
     }
 
     // VISIBLE_BLOCKS의 값에 따라 Next Block 배열 초기화
     initNextBlocks() {
         for (let i = 0; i < VISIBLE_BLOCKS; i++) {
-            let next = new Block(this.ctxNext);
-            this.nextBlocks.push(next);
+            let newBlock = new Block(this.ctxNext);
+            this.nextBlocks.push(newBlock);
         }
     }
 

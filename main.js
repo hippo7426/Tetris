@@ -46,7 +46,7 @@ initNextBoard();
 // 게임 시작
 function play() {
     addEventListener();
-    resetGame(false);
+    resetGame();
 
     if(rafid){
         cancelAnimationFrame(rafid);
@@ -56,15 +56,15 @@ function play() {
 
 // DFS를 통한 Auto Play
 function auto(){
-    resetGame(true);
+    resetGame();
     animate();
 }
 
-function resetGame(auto) {
+function resetGame() {
     info.score = 0;
     info.lines = 0;
     info.level = 0;
-    board.reset(auto);
+    board.reset();
     time = {start:0, elapsed: 0, level: 800};
 }
 
