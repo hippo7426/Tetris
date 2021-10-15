@@ -27,7 +27,7 @@ let info = new Proxy(userInfo, {
 let board = new Board(ctx, ctxNext);
 
 // next block을 보여주는 canvas 초기화
-function initNextBlock(){
+function initNextBoard(){
     ctxNext.canvas.width = 4*BLOCK_SIZE;
     ctxNext.canvas.height = 4*BLOCK_SIZE;
     ctxNext.scale(BLOCK_SIZE, BLOCK_SIZE);
@@ -41,12 +41,12 @@ function updateInfo(key, value){
     }
 }
 
-initNextBlock();
+initNextBoard();
 
 // 게임 시작
 function play() {
     addEventListener();
-    resetGame();
+    resetGame(false);
 
     if(rafid){
         cancelAnimationFrame(rafid);
@@ -56,15 +56,15 @@ function play() {
 
 // DFS를 통한 Auto Play
 function auto(){
-    resetGame();
+    resetGame(true);
     animate();
 }
 
-function resetGame() {
+function resetGame(auto) {
     info.score = 0;
     info.lines = 0;
     info.level = 0;
-    board.reset();
+    board.reset(auto);
     time = {start:0, elapsed: 0, level: 800};
 }
 

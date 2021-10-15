@@ -1,50 +1,59 @@
 // 게임 보드 내의 상황을 다루는 script
 
 // Auto Play를 위한 tree의 Node 클래스
-class treeNode{
-    constructor(lv){
+class treeNode {
+    constructor(lv) {
         this.lv = lv;
         this.acmScore = 0;
-        this.child=[];
+        this.child = [];
     }
 }
 
 // Board Class
 class Board {
     cells;
-    nextBlocks=[];
+    nextBlocks = [];
     // Auto Play variables
     recX;
     recY;
     recShape;
-    
+
     constructor(ctx, ctxNext) {
         this.ctx = ctx;
         this.ctxNext = ctxNext;
         this.init();
     }
-    
+
     // canvas의 크기와 pixel 사이즈 조절
     init() {
         this.ctx.canvas.width = COLS * BLOCK_SIZE;
         this.ctx.canvas.height = ROWS * BLOCK_SIZE;
         this.ctx.scale(BLOCK_SIZE, BLOCK_SIZE);
     }
-    
+
     // 게임 재시작 시 초기화
-    reset() {
+    reset(auto) {
         this.cells = this.getNewBoard();
         this.block = new Block(this.ctx);
         this.block.x = 3;
         this.initNextBlocks();
-        this.getNextBlock();
-      //  const { width, height } = this.ctxNext.canvas;
-        //this.ctxNext.clearRect(0,0,width,height);
-        //this.nextBlocks[0].draw();
-        //this.genShadow();
-        
+        const { width, height } = this.ctxNext.canvas;
+        this.ctxNext.clearRect(0, 0, width, height);
+        this.nextBlocks[0].draw();
+        this.next=this.nextBlocks[0];
+        if (!auto)
+            this.genShadow();
+
     }
-    
+
+    // resetForAuto() {
+    //     this.cells = this.getNewBoard();
+    //     this.block = new Block(this.ctx);
+    //     this.block.x = 3;
+    //     this.initNextBlocks();
+
+    // }
+
     // ROWS*COLS 크기의 이차원 배열 return, 모두 0으로 초기화됨
     getNewBoard() {
         return Array.from(
@@ -55,16 +64,21 @@ class Board {
     // 다음 블럭 생성 
     getNextBlock() {
         const { width, height } = this.ctxNext.canvas;
-        this.next = new Block(this.ctxNext);
-        this.ctxNext.clearRect(0, 0, width, height);
+        this.next = this.nextBlocks[0];
+        this.nextBlocks.splice(0, 1);
+        let newBlock = new Block(this.ctxNext);
+        this.nextBlocks.push(newBlock);
         this.next.draw();
     }
 
     // VISIBLE_BLOCKS의 값에 따라 Next Block 배열 초기화
-    initNextBlocks(){
-
+    initNextBlocks() {
+        for (let i = 0; i < VISIBLE_BLOCKS; i++) {
+            let next = new Block(this.ctxNext);
+            this.nextBlocks.push(next);
+        }
     }
-    
+
     // 아래로 떨어질 수 있으면 이를 실행, 불가능 할땐 보드 갱신 or game over 신호 return
     drop() {
         let b = moves[KEY.DOWN](this.block);
@@ -83,10 +97,10 @@ class Board {
             this.getNextBlock();
             this.genShadow();
         }
-        
+
         return true;
     }
-    
+
     // 해당 위치로 이동할 수 있는지 체크
     valid(b) {
         return b.shape.every((row, dy) => {
@@ -94,19 +108,19 @@ class Board {
                 let x = b.x + dx;
                 let y = b.y + dy;
                 if (value === 0)
-                return 1;
+                    return 1;
                 else if (this.inBoard(x, y) && this.isEmpty(x, y))
-                return 1;
-                
+                    return 1;
+
             });
         });
     }
-    
+
     // 블럭이 보드 안에 위치하는가
     inBoard(x, y) {
         return 0 <= x && x <= COLS && y <= ROWS;
     }
-    
+
     // 블럭이 이동할 위치가 비어있는가
     isEmpty(x, y) {
         return this.cells[y] && this.cells[y][x] === 0;
@@ -120,12 +134,12 @@ class Board {
                 [bb.shape[x][y], bb.shape[y][x]] = [bb.shape[y][x], bb.shape[x][y]]; // Destructuring assignment
             }
         }
-        
+
         bb.shape.forEach(row => row.reverse());
-        
+
         return bb;
     }
-    
+
     // 라인 완성 시 제거, 점수 추가
     clear() {
         let line = 0;
@@ -162,7 +176,7 @@ class Board {
         let below = 0;
         this.block.shape.forEach((row, y) => {
             row.forEach((value, x) => {
-                if (value>0&&((y + this.block.y + 1 < ROWS && this.cells[y + this.block.y + 1][x + this.block.x]  >0) || y+this.block.y+1===ROWS)){
+                if (value > 0 && ((y + this.block.y + 1 < ROWS && this.cells[y + this.block.y + 1][x + this.block.x] > 0) || y + this.block.y + 1 === ROWS)) {
                     below++;
                 }
                 if (value > 0) {
@@ -170,11 +184,11 @@ class Board {
                 }
             });
         });
-        
+
         info.score += below * 10;
-        
+
     }
-    
+
     // 보드 새로 그리기
     draw() {
         this.drawBoard();
@@ -193,8 +207,8 @@ class Board {
             });
         });
     }
-    
-    
+
+
     // 추가 기능 : 그림자
 
     // 새로운 그림자 생성
@@ -209,7 +223,7 @@ class Board {
             s = moves[KEY.DOWN](this.shadow);
         }
     }
-    
+
     // 그림자 실시간 업데이트
     updateShadow() {
         this.shadow.x = this.block.x;
@@ -218,7 +232,7 @@ class Board {
         while (this.valid(s)) {
             this.shadow.move(s);
             s = moves[KEY.DOWN](this.shadow);
-            
+
         }
     }
 
