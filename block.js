@@ -14,11 +14,11 @@ class Block {
 
     // 새로운 블럭 생성
     spawn() {
-        this.x = 0;
         this.y = 0;
         this.id = this.randomBlock(COLOR.length);
         this.color = COLOR[this.id];
         this.shape = SHAPES[this.id];
+        this.x = (this.id===3) ? 4 : 3;
     }
 
     // 블럭 랜덤 생성 함수

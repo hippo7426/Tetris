@@ -61,12 +61,12 @@ function play() {
 function auto() {
 
     document.removeEventListener('keydown', KeyDown);
-    resetGame();
+    resetGame4Auto();
 
     if (rafid) {
         cancelAnimationFrame(rafid);
     }
-    animate();
+    animate4Auto();
 }
 
 function resetGame() {
@@ -76,6 +76,10 @@ function resetGame() {
     begin = false;
     board.reset();
     time = { start: 0, elapsed: 0, level: 800 };
+}
+
+function resetGame4Auto(){
+
 }
 
 // 매번 event.code에 따라 case를 분리하기 번거로움 ex) "ArrowUp"
@@ -128,7 +132,7 @@ function animate(now = 0) {
 }
 
 // Auto play를 위한 함수
-function animateAuto(now = 0) {
+function animate4Auto(now = 0) {
     time.elapsed = now - time.start;
 
     if (time.elapsed > time.level) {

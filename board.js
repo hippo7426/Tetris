@@ -35,7 +35,6 @@ class Board {
     reset() {
         this.cells = this.getNewBoard();
         this.block = new Block(this.ctx);
-        this.block.x = 3;
         
         this.initNextBlocks();
         const { width, height } = this.ctxNext.canvas;
@@ -44,6 +43,10 @@ class Board {
         this.next.draw();
         
         this.genShadow();
+
+    }
+
+    resetAuto(){
 
     }
 
@@ -233,5 +236,6 @@ class Board {
     }
 
     // additional function : Auto Play
-    
+    drop4Auto(){
+    }
 }
