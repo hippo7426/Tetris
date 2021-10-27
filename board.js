@@ -238,4 +238,8 @@ class Board {
     // additional function : Auto Play
     drop4Auto(){
     }
+
+    recommend(){
+        
+    }
 }
