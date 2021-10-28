@@ -35,10 +35,10 @@ const KEY = {
 }
 
 const POINT = {
-    SINGLE: 100,
-    DOUBLE: 300,
-    TRIPLE: 500,
-    TETRIS: 800,
+    SINGLE: 300,
+    DOUBLE: 600,
+    TRIPLE: 900,
+    TETRIS: 1200,
     SOFT_DROP: 1,
     HARD_DROP: 2
 }

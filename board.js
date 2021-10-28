@@ -5,7 +5,7 @@ class treeNode {
     constructor(lv) {
         this.lv = lv;
         this.acmScore = 0;
-        this.child = [];
+        this.recField;
     }
 }
 
@@ -35,19 +35,36 @@ class Board {
     reset() {
         this.cells = this.getNewBoard();
         this.block = new Block(this.ctx);
-        
-        this.initNextBlocks();
+        this.block.x = (this.id === 3) ? 4 : 3;
+
         const { width, height } = this.ctxNext.canvas;
         this.ctxNext.clearRect(0, 0, width, height);
+        this.initNextBlocks();
         this.next = this.nextBlocks[0];
         this.next.draw();
-        
-        this.genShadow();
 
+        this.genShadow();
     }
 
-    resetAuto(){
+    // reset for Auto play : reset() 메소드를 수정
+    reset4Auto() {
+        // reset() 과 동일
+        this.cells = this.getNewBoard();
+        this.block = new Block(this.ctx);
+        this.block.x = (this.id === 3) ? 4 : 3;
 
+        const { width, height } = this.ctxNext.canvas;
+        this.ctxNext.clearRect(0, 0, width, height);
+        this.initNextBlocks();
+        this.next = this.nextBlocks[0];
+        this.next.draw();
+
+        this.genShadow();
+
+        // Auto 
+        this.recRoot = new treeNode(0);
+        this.recRoot.recField = JSON.parse(JSON.stringify(this.cells));
+        this.recommend(this.recRoot);
     }
 
     // ROWS*COLS 크기의 이차원 배열 return, 모두 0으로 초기화됨
@@ -60,19 +77,19 @@ class Board {
     // 다음 블럭 생성 
     getNextBlock() {
         const { width, height } = this.ctxNext.canvas;
-      
+
         this.nextBlocks.splice(0, 1);
         let newBlock = new Block(this.ctxNext);
         this.nextBlocks.push(newBlock);
         this.next = this.nextBlocks[0];
-        
+
         this.ctxNext.clearRect(0, 0, width, height);
         this.next.draw();
     }
 
     // VISIBLE_BLOCKS의 값에 따라 Next Block 배열 초기화
     initNextBlocks() {
-        for (let i = 0; i < VISIBLE_BLOCKS; i++) {
+        for (let i = 0; i < VISIBLE_BLOCKS-1; i++) {
             let newBlock = new Block(this.ctxNext);
             this.nextBlocks.push(newBlock);
         }
@@ -92,7 +109,7 @@ class Board {
             }
             this.block = this.next;
             this.block.ctx = this.ctx;
-            this.block.x = 3;
+            this.block.x = (this.id === 3) ? 4 : 3;
             this.getNextBlock();
             this.genShadow();
         }
@@ -184,7 +201,7 @@ class Board {
             });
         });
 
-        info.score += below * 10;
+        info.score += below*10;
 
     }
 
@@ -236,10 +253,126 @@ class Board {
     }
 
     // additional function : Auto Play
-    drop4Auto(){
+
+    //this.block의 위치를 this.shadow의 위치로 변경, 다음 블럭의 그림자의 위치를 recommend() 메소드로 변경
+    drop4Auto() {
+        this.block.move(this.shadow);
+        if (this.block.y === 0){
+            return false;
+        }
+        this.update();
+        this.clear();
+
+        this.block = this.next;
+        this.block.ctx = this.ctx;
+        this.block.x = (this.id === 3) ? 4 : 3;
+        this.getNextBlock();
+        this.genShadow();
+
+        this.recRoot = new treeNode(0);
+        this.recRoot.recField = JSON.parse(JSON.stringify(this.cells));
+        this.recommend(this.recRoot);
+
+        return true;
     }
 
-    recommend(){
-        
+    //this.block의 그림자,  즉 this.shadow의 위치를 변경
+    recommend(parentNode) {
+        let max = 0, tmpMax = 0;
+        let curBlock;
+
+        console.log(parentNode.lv);
+        // 현재 Tree 레벨에서 확인할 블럭
+        if (parentNode.lv === 0) {
+            curBlock = JSON.parse(JSON.stringify(this.block));
+        }
+        else {
+            curBlock = JSON.parse(JSON.stringify(this.nextBlocks[parentNode.lv - 1]));
+        }
+
+        // 회전에 의한 4가지 모양, X 좌표에 따른 Check
+        for (let Shape = 0; Shape < 4; Shape++) {
+            if (Shape > 0) {
+                curBlock = this.rotate(curBlock);
+            }
+            for (let X = -2; X < COLS; X++) {
+                let flag = false;
+                curBlock.x = X;
+                curBlock.y = 0;
+                // 해당 모양과 X 좌표의 최대 y좌표 계산, 한번이라도 내려갔는지를 flag로 확인
+                while (this.valid(curBlock)) {
+                    flag = true;
+                    curBlock.y++;
+                }
+                curBlock.y--;
+
+                // valid 한 블럭이었다면 
+                if (flag === true) {
+                    let NewNode = new treeNode(parentNode.lv + 1);
+                    NewNode.recField = JSON.parse(JSON.stringify(parentNode.recField));
+                    NewNode.acmScore += this.simulScore(curBlock, NewNode.recField);
+                   
+
+                    if (NewNode.lv === VISIBLE_BLOCKS) {
+                        if (max < NewNode.acmScore)
+                            max = NewNode.acmScore;
+                    }
+                    else if (NewNode.lv === 1){
+                        tmpMax = NewNode.acmScore + this.recommend(NewNode);
+
+                        if (max < tmpMax){
+                            max = tmpMax;
+                            // 그림자 정보 수정 - x좌표, y좌표, Shape
+                            this.shadow.move(curBlock);
+                        }
+            
+                    }
+                    else {
+                        tmpMax = NewNode.acmScore + this.recommend(NewNode);
+
+                        if (max < tmpMax)
+                            max = tmpMax;
+                    }
+                }
+            }
+        }
+
+        return max;
+    }
+
+    // recommend 내에서 각각의 Node들의 필드 변화에 따른 점수를 예측해주는 함수
+    // this.cells를 사용한 update와 clear를 통합, 수정
+    simulScore(block, field) {
+        let score = 0;
+
+        // update() part
+        let below = 0;
+        block.shape.forEach((row, y) => {
+            row.forEach((value, x) => {
+                if (value > 0 && ((y + block.y + 1 < ROWS && field[y + block.y + 1][x + block.x + 1] > 0) || y + block.y + 1 === ROWS)){
+                    below++;
+                }
+                if (value >0){
+                    field[y+block.y][x+block.x] = value;
+                }
+            });
+        });
+
+        score += below*10;
+
+        // clear() part
+        let line = 0;
+        field.forEach((row,y)=>{
+            if(row.every(value=>value>0)){
+                field.splice(y, 1);
+                field.unshift(Array(COLS).fill(0));
+                line++;
+            }
+        });
+        if (line >0){
+            score+=this.pointsByLine(line);
+        }
+
+        return score;
     }
 }

@@ -78,19 +78,24 @@ function resetGame() {
     time = { start: 0, elapsed: 0, level: 800 };
 }
 
-function resetGame4Auto(){
-
+function resetGame4Auto() {
+    info.score = 0;
+    info.lines = 0;
+    info.level = 0;
+    begin = false;
+    board.reset4Auto();
+    time = { start: 0, elapsed: 0, level: 600 };
 }
 
+
 // 매번 event.code에 따라 case를 분리하기 번거로움 ex) "ArrowUp"
-// 펼침 연산자를 활용한 얕은 복사
+// 펼침 연산자를 활용한 복사
 const moves = {
     [KEY.LEFT]: b => ({ ...b, x: b.x - 1 }),
     [KEY.RIGHT]: b => ({ ...b, x: b.x + 1 }),
     [KEY.DOWN]: b => ({ ...b, y: b.y + 1 }),
     [KEY.SPACE]: b => ({ ...b, y: b.y + 1 }),
     [KEY.UP]: b => board.rotate(b)
-
 }
 
 // 게임 종료
@@ -137,7 +142,7 @@ function animate4Auto(now = 0) {
 
     if (time.elapsed > time.level) {
         time.start = now;
-        if (!board.dropAuto()) {
+        if (!board.drop4Auto()) {
             gameOver();
             return;
         }
@@ -145,7 +150,7 @@ function animate4Auto(now = 0) {
 
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     board.draw();
-    rafid = requestAnimationFrame(animateAuto);
+    rafid = requestAnimationFrame(animate4Auto);
 }
 
 function addEventListener() {
